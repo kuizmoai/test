@@ -1,15 +1,13 @@
 """Pydantic schemas for the Kuizmo API."""
 from __future__ import annotations
 
-from typing import List, Optional
-
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class CourseBase(BaseModel):
     title: str = Field(..., example="Neural Networks Primer")
     description: str = Field(..., example="Master the foundations of neural networks.")
-    tags: List[str] = Field(default_factory=list, example=["machine-learning", "ai"])
+    tags: list[str] = Field(default_factory=list, example=["machine-learning", "ai"])
 
 
 class CourseCreate(CourseBase):
@@ -43,18 +41,19 @@ class ModuleRead(ModuleBase):
 
 
 class QuizQuestionBase(BaseModel):
-    prompt: str = Field(..., example="Which activation function is piecewise linear?")
-    options: List[str] = Field(..., min_items=2)
-    answer_index: int = Field(..., ge=0)
-
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "prompt": "Which activation function is piecewise linear?",
                 "options": ["Sigmoid", "Tanh", "ReLU", "Softmax"],
                 "answer_index": 2,
             }
         }
+    )
+
+    prompt: str = Field(..., example="Which activation function is piecewise linear?")
+    options: list[str] = Field(..., min_length=2)
+    answer_index: int = Field(..., ge=0)
 
 
 class QuizQuestionCreate(QuizQuestionBase):
@@ -71,19 +70,19 @@ class QuizQuestionRead(QuizQuestionBase):
 
 
 class QuizAttempt(BaseModel):
-    answers: List[int] = Field(..., example=[2, 1])
+    answers: list[int] = Field(..., example=[2, 1])
 
 
 class QuizResult(BaseModel):
     score: int
     total: int
-    correct_question_ids: List[int]
+    correct_question_ids: list[int]
 
 
 class ProgressRead(BaseModel):
     user_id: str
     course_id: int
-    completed_module_ids: List[int]
+    completed_module_ids: list[int]
 
 
 class ProgressUpdate(BaseModel):
